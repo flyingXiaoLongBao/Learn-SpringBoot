@@ -1,6 +1,24 @@
+server:
+  port: 8080
+
+# 禁用启动时的横幅输出
 spring:
   datasource:
-    driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://nas.zsqnas.icu:3306/springboot_demo?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&allowMultiQueries=true&useSSL=false&allowPublicKeyRetrieval=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://nas.zsqnas.icu:3306/big_event?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&allowMultiQueries=true&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: 12345678
+
+  main:
+    banner-mode: off
+
+mybatis-plus:
+  global-config:
+    banner: false
+  configuration:
+    map-underscore-to-camel-case: true
+
+jwt:
+  secret: zsqReallyHanson
+  expiration: 60480000
+  token-header: Authorization

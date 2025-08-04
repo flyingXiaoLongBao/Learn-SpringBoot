@@ -9,6 +9,18 @@ spring:
     username: root
     password: 12345678
 
+  data:
+    redis:
+      host: nas.zsqnas.icu
+      port: 6379
+      # password: 123456   # 如无密码可省略
+      database: 0
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
   main:
     banner-mode: off
 

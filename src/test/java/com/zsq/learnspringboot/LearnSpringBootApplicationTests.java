@@ -5,21 +5,22 @@ import com.zsq.learnspringboot.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 
 @SpringBootTest
 class LearnSpringBootApplicationTests {
 
-
-    private  final UserService userService;
+    private final RedisTemplate redisTemplate;
 
     @Autowired
-    public LearnSpringBootApplicationTests(UserService userService) {
-        this.userService = userService;
-    }
-    @Test
-    void testUserService() {
-        User user = userService.getById(991248385);
-        System.out.println(user.getUsername());
+    public LearnSpringBootApplicationTests(RedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
     }
 
+    @Test
+    void testRedisSet() {
+        ValueOperations valueOperations = redisTemplate.opsForValue();
+        valueOperations.set("name", "zsq");
+    }
 }

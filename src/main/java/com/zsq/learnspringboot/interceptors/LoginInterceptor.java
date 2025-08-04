@@ -5,6 +5,7 @@ import com.zsq.learnspringboot.utils.ThreadLocalUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -14,11 +15,14 @@ import java.util.Map;
 @Component
 public class LoginInterceptor implements HandlerInterceptor {
 
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
+    private final RedisTemplate redisTemplate;
 
     @Autowired
-    public LoginInterceptor(JwtUtil jwtUtil) {
+    public LoginInterceptor(JwtUtil jwtUtil,
+                            RedisTemplate redisTemplate) {
         this.jwtUtil = jwtUtil;
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
@@ -38,6 +42,12 @@ public class LoginInterceptor implements HandlerInterceptor {
         }
         
         try {
+            //redis中获取相同的token,两个token相同才放行
+            String redisToken = (String) redisTemplate.opsForValue().get(token);
+            if(redisToken ==  null || !redisToken.equals(token)){
+                throw new Exception("缓存不一致,令牌无效");
+            }
+
             Map<String, Object> map = jwtUtil.parseToken(token);
             System.out.println("Token解析成功: " + map);
             //把相关信息存储到threadLocal中

@@ -96,6 +96,19 @@
             <version>8.5.10</version>
         </dependency>
 
+        <!--redis-->
+        <!-- Redis + Lettuce（默认客户端）-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!-- 让 Lettuce 连接池生效 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

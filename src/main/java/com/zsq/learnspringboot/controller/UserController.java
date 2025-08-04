@@ -10,11 +10,14 @@ import com.zsq.learnspringboot.utils.Md5Util;
 import com.zsq.learnspringboot.utils.ThreadLocalUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/user")
@@ -22,11 +25,16 @@ public class UserController {
 
     private final UserService userService;
     private final JwtUtil jwtUtil;
+    private final RedisTemplate redisTemplate;
+
 
     @Autowired
-    public UserController(UserService userService, JwtUtil jwtUtil) {
+    public UserController(UserService userService,
+                          JwtUtil jwtUtil,
+                          RedisTemplate redisTemplate) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
+        this.redisTemplate = redisTemplate;
     }
 
     /*
@@ -51,7 +59,7 @@ public class UserController {
         User u = userService.findByUserName(user.getUsername());
         if (u != null) {
             if (u.getPassword().equals(Md5Util.getMD5String(user.getPassword()))) {
-                //登录成功，下发JWT令牌
+
                 Map<String, Object> claims = new HashMap<>();
 
                 claims.put("id", u.getId());
@@ -59,6 +67,10 @@ public class UserController {
 
                 String token = jwtUtil.genToken(claims);
 
+                //登录成功，下发JWT令牌给redis
+                ValueOperations<String, String> operations = redisTemplate.opsForValue();
+                operations.set(token, token, 7 * 24 * 60 * 60, TimeUnit.SECONDS);
+                //登录成功，下发JWT令牌给用户
                 return Result.success(token);
             } else {
                 return Result.error("密码错误");
@@ -113,7 +125,7 @@ public class UserController {
     * 用户 修改密码
     * */
     @PatchMapping("/updatePwd")
-    public Result updatePwd(@RequestBody UpdatePwdDTO updatePwdDTO){
+    public Result updatePwd(@RequestBody UpdatePwdDTO updatePwdDTO,@RequestHeader(name = "Authorization") String token){
         //先对所有的密码加密
         String old_pwd = Md5Util.getMD5String(updatePwdDTO.getOld_pwd());
         String new_pwd = Md5Util.getMD5String(updatePwdDTO.getNew_pwd());
@@ -132,7 +144,16 @@ public class UserController {
         User user = userService.getById(id);
         user.setPassword(new_pwd);
         user.setUpdateTime(LocalDateTime.now());
-        return userService.updateById(user) ? Result.success() : Result.error("修改密码失败");
+
+        boolean flag = userService.updateById(user);
+        if (flag){ //修改成功,删除redis中的token
+            ValueOperations<String, String> operations = redisTemplate.opsForValue();
+            operations.getOperations().delete(token);
+            return Result.success("修改密码成功，请重新登录");
+        }
+        else {
+            return Result.error("修改密码失败");
+        }
     }
 
 }

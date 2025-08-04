@@ -70,13 +70,13 @@
         </dependency>
 
         <!--mybatis-plus-->
-        <!-- spring boot3 引入可选模块 -->
+            <!-- spring boot3 引入可选模块 -->
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
         </dependency>
 
-        <!-- jdk 11+ 引入可选模块 -->
+            <!-- jdk 11+ 引入可选模块 -->
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-jsqlparser</artifactId>
@@ -87,6 +87,13 @@
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
             <version>4.4.0</version>
+        </dependency>
+
+        <!--minio-->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>8.5.10</version>
         </dependency>
 
     </dependencies>

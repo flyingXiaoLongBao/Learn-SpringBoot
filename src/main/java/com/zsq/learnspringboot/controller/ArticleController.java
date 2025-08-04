@@ -1,39 +1,78 @@
 package com.zsq.learnspringboot.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.zsq.learnspringboot.pojo.Article;
+import com.zsq.learnspringboot.pojo.DTO.PageQuery;
 import com.zsq.learnspringboot.pojo.Result;
-import com.zsq.learnspringboot.utils.JwtUtil;
+import com.zsq.learnspringboot.service.ArticleService;
+import com.zsq.learnspringboot.utils.ThreadLocalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/article")
 public class ArticleController {
 
-    private final JwtUtil jwtUtil;
+    private final ArticleService articleService;
 
     @Autowired
-    public ArticleController(JwtUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
+    public ArticleController(ArticleService articleService) {
+        this.articleService = articleService;
     }
 
-    @GetMapping("/list")
-    public Result<String> list(@RequestHeader(name = "Authorization") String token) {
-        // 解析token获取用户信息
-        try {
-            Map<String, Object> claims = jwtUtil.parseToken(token);
-            Integer id = (Integer) claims.get("id");
-            String username = (String) claims.get("username");
-            System.out.println("当前用户ID: " + id + ", 用户名: " + username);
-        } catch (Exception e) {
-            return Result.error("令牌无效");
-        }
-        
-        return Result.success("...所有文章的数据...");
+    /*
+     * 新增文章
+     * */
+    @PostMapping
+    public Result addArticle(@RequestBody Article article) {
+        Map<String, Object> map = ThreadLocalUtil.get();
+        int userId = (Integer) map.get("id");
+
+        article.setCreateUser(userId);
+        article.setCreateTime(LocalDateTime.now());
+        article.setUpdateTime(LocalDateTime.now());
+
+        return articleService.save(article) ? Result.success() : Result.error("添加失败");
+    }
+    /*
+    * 更新文章
+    * */
+    @PutMapping
+    public Result updateArticle(@RequestBody Article article) {
+        article.setUpdateTime(LocalDateTime.now());
+        return articleService.save( article)? Result.success() : Result.error("更新失败");
+    }
+
+    /*
+    * 获取文章详情
+    * */
+    @GetMapping("/detail")
+    public Result<Article> getArticleDetail(Integer id) {
+        Article article = articleService.getById(id);
+        return Result.success(article);
+    }
+
+    /*
+    * 删除文章
+    * */
+    @DeleteMapping
+    public Result deleteArticle(Integer id) {
+        return articleService.removeById(id) ? Result.success() : Result.error("删除失败");
+    }
+
+    /*
+     * 文章列表(条件分页)
+     * */
+    @GetMapping
+    public Result<IPage<Article>> pageByCondition(PageQuery pageQuery) {
+        Page<Article> page = articleService.pageByCondition(pageQuery);
+        return Result.success(page);
     }
 }

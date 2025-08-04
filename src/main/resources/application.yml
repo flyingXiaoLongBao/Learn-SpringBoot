@@ -22,3 +22,9 @@ jwt:
   secret: zsqReallyHanson
   expiration: 60480000
   token-header: Authorization
+
+minio:
+  endpoint: http://nas.zsqnas.icu:9000   # MinIO 控制台端口
+  access-key: minio
+  secret-key: minio@123
+  bucket-name: hellominio
